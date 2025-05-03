@@ -4,7 +4,7 @@ import json
 from fastapi import FastAPI, Form
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
-from fastapi.responses import HTMLResponse
+from fastapi.responses import HTMLResponse, JSONResponse
 
 from sqlmodel import SQLModel, create_engine, Session, select
 
@@ -50,4 +50,12 @@ async def add_constellation(
         session.commit()
         session.refresh(constellation)
     return f"{scientific_name} has been added to our database!"
+
+
+@app.get("/get-constellations", response_class=JSONResponse)
+async def get_constellations():
+    statement = select(Constellation)
+    with Session(engine) as session:
+        constellations = session.exec(statement).all()
+    return json.dumps([c.model_dump() for c in constellations])
 
